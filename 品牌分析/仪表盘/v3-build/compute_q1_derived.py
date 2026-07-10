@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """算 Q1 派生口径:市场CVR、同季run-rate、同年季节倍数、Q4目标区间、稳定篮子覆盖率。
    并把 basket 覆盖率写进 q1_slice_data.json。"""
-import json, io
+import json, io, os
 
-D = json.load(io.open(r'C:\Users\EDY\AppData\Local\Temp\claude\D--nexgaios-amazon\3813589b-7399-4352-afc4-07c1ea4f4afb\scratchpad\v3_data.json', encoding='utf-8'))
-SLICE = r'C:\Users\EDY\AppData\Local\Temp\claude\D--nexgaios-amazon\3813589b-7399-4352-afc4-07c1ea4f4afb\scratchpad\q1_slice_data.json'
+HERE  = os.path.dirname(os.path.abspath(__file__))          # 品牌分析/仪表盘/v3-build
+D = json.load(io.open(os.path.join(HERE, 'v3_data.json'), encoding='utf-8'))
+SLICE = os.path.join(HERE, 'q1_slice_data.json')
 bc = D['aggregate']['brand']
 H1 = lambda yr: ['%d-%02d'%(yr,m) for m in range(2,7)]
 

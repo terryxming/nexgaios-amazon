@@ -2,8 +2,10 @@
 """V3 DATA 管线:5 ASIN + 品牌视图 SQP CSV -> v3_data.json。分类规则见 doc 03。"""
 import csv, glob, io, json, os, re
 
-ROOT = r'C:\Users\EDY\Downloads\搜索查询绩效报告'
-OUT  = r'C:\Users\EDY\AppData\Local\Temp\claude\D--nexgaios-amazon\3813589b-7399-4352-afc4-07c1ea4f4afb\scratchpad\v3_data.json'
+HERE  = os.path.dirname(os.path.abspath(__file__))          # 品牌分析/仪表盘/v3-build
+BRAND = os.path.dirname(os.path.dirname(HERE))              # 品牌分析
+ROOT  = os.path.join(BRAND, '搜索查询绩效报告')             # SQP 原始 CSV(仓库相对)
+OUT   = os.path.join(HERE, 'v3_data.json')                 # 输出到脚本同目录
 
 # ---- 组合/父体/运营 元数据(领星核实) ----
 ASINS = {

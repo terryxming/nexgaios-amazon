@@ -3,8 +3,10 @@
    KPI去重、年对年可辨(实心圆/空心方+端点标注+markArea)、篮子覆盖率披露。"""
 import json, io, os
 
-SLICE = r'C:\Users\EDY\AppData\Local\Temp\claude\D--nexgaios-amazon\3813589b-7399-4352-afc4-07c1ea4f4afb\scratchpad\q1_slice_data.json'
-OUT   = r'C:\Users\EDY\Downloads\搜索查询绩效报告\07_V3_Q1切片.html'
+HERE  = os.path.dirname(os.path.abspath(__file__))          # 品牌分析/仪表盘/v3-build
+DASH  = os.path.dirname(HERE)                                # 品牌分析/仪表盘
+SLICE = os.path.join(HERE, 'q1_slice_data.json')
+OUT   = os.path.join(DASH, '07_V3_Q1切片.html')            # 与 echarts.min.js 同目录(相对引用)
 Q1 = json.load(io.open(SLICE, encoding='utf-8'))
 
 HTML = r'''<!DOCTYPE html>
