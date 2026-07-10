@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "q1proto",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8794", "--directory", "C:\\Users\\terry\\AppData\\Local\\Temp\\claude\\D--nexgaios-amazon\\e01e5f80-7f32-4678-8397-81f8169ef4ff\\scratchpad"],
+      "port": 8794
+    }
+  ]
+}

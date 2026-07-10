@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ikarao · V3 切片 · Q1 市场与季节</title>
+<script src="echarts.min.js"></script>
+<style>
+  :root{
+    --bg:#eef1f5;--panel:#fff;--ink:#18202e;--muted:#4d5766;--line:#e3e8ef;--line2:#eef2f7;
+    --brand:#2f6df6;--good:#0f9d76;--bad:#d0453b;--warn:#c9691a;
+    --demand:#0072B2;--order:#009E73;
+    --data:#e8f0ff;--data-ink:#1f5fd6;--exp:#fff2e2;--exp-ink:#a85c12;
+    --shadow:0 1px 3px rgba(20,30,50,.08),0 1px 2px rgba(20,30,50,.04);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.65;
+    font-family:"Segoe UI",-apple-system,"Microsoft YaHei","PingFang SC",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1440px;width:100%;margin:0 auto;padding:22px 28px 64px}
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;
+    padding:18px 24px;background:linear-gradient(120deg,#22335a,#33527f);color:#fff;border-radius:12px;box-shadow:var(--shadow)}
+  header.top h1{font-size:22px;margin:0}
+  header.top .sub{font-size:14px;opacity:.88;margin-top:6px}
+  .seg-lab{font-size:14px;opacity:.85;margin-bottom:5px}
+  .seg{display:inline-flex;background:#ffffff22;border-radius:9px;padding:3px;gap:2px}
+  .seg button{font-size:14px;padding:7px 15px;border:0;background:transparent;color:#fff;border-radius:7px;cursor:pointer;opacity:.82}
+  .seg button.on{background:#fff;color:var(--ink);opacity:1;font-weight:600}
+  .seg button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+  section.mod{margin-top:20px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+  .mhead{padding:15px 24px;border-bottom:1px solid var(--line2);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .mhead .q{font-size:14px;font-weight:800;color:#fff;background:var(--brand);border-radius:6px;padding:4px 10px}
+  .mhead h2{font-size:18px;margin:0}
+  .badge-basis{font-size:14px;color:var(--muted);background:var(--line2);border:1px solid var(--line);border-radius:8px;padding:4px 12px;margin-left:auto}
+  .mbody{padding:20px 24px}
+  .sec-lab{font-size:15px;font-weight:700;color:var(--ink);margin:24px 0 10px;padding-left:10px;border-left:3px solid var(--brand)}
+  .term{border-bottom:1px dashed var(--muted);cursor:help}
+  .headline{background:#fafcff;border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:10px;padding:18px 22px}
+  .headline .concl{font-size:21px;font-weight:800;line-height:1.45;display:block;margin-bottom:10px}
+  .headline .detail{font-size:15px;line-height:1.9;color:#313b49}
+  .headline .cav{font-size:13.5px;color:var(--muted);margin-top:8px}
+  .headline b{color:var(--ink)}
+  .up{color:var(--good);font-weight:700}.down{color:var(--bad);font-weight:700}
+  .kpirow{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:16px}
+  @media(max-width:900px){.kpirow{grid-template-columns:repeat(2,1fr)}}
+  .kpi{background:#fafcff;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .kpi.hero{border-color:#bcd2ff;background:#f5f9ff}
+  .kpi .lab{font-size:14px;color:var(--muted)}
+  .kpi .val{font-size:24px;font-weight:800;margin-top:4px;line-height:1.2}
+  .kpi .sub{font-size:14px;color:var(--muted);margin-top:4px}
+  .charts{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:14px}
+  @media(max-width:900px){.charts{grid-template-columns:1fr}}
+  .chart-card{border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .chart-card h3{font-size:15px;margin:0 0 2px}
+  .chart-card .cap{font-size:14px;color:var(--muted);margin-bottom:6px}
+  .ech{width:100%;height:300px}
+  .combined{font-size:15px;font-weight:600;color:var(--ink);background:#fff8ee;border:1px solid #f0dcc0;border-radius:8px;padding:12px 16px;margin-top:14px}
+  .acts{display:flex;flex-direction:column;gap:12px}
+  .act{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
+  .act .act-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .act .act-title{font-size:15px;font-weight:700}
+  .act .act-body{font-size:14px;line-height:1.75;color:#313b49}
+  .tag{flex:none;font-size:14px;font-weight:700;padding:3px 10px;border-radius:6px}
+  .tag.data{background:var(--data);color:var(--data-ink)}.tag.exp{background:var(--exp);color:var(--exp-ink)}
+  .audit{margin-top:18px;border:1px solid var(--line);border-radius:12px;background:#fbfcfe}
+  .audit>summary{font-size:15px;font-weight:700;color:var(--brand);cursor:pointer;padding:14px 18px;list-style:none;user-select:none}
+  .audit>summary::-webkit-details-marker{display:none}
+  .audit>summary::before{content:"▸ ";}
+  .audit[open]>summary::before{content:"▾ ";}
+  .audit .abox{padding:0 18px 16px;font-size:14px;line-height:1.9}
+  .audit h4{font-size:14.5px;margin:14px 0 4px;color:var(--ink)}
+  .audit ul{margin:6px 0;padding-left:22px}.audit li{margin:3px 0}
+  .audit .k{color:var(--ink);font-weight:700}
+  .foot{margin-top:20px;font-size:14px;color:var(--muted);line-height:1.8;border-top:1px solid var(--line);padding-top:14px}
+  .foot b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Ikarao · 卡拉OK市场 增长仪表盘 <span style="opacity:.6;font-size:15px">V3 切片</span></h1>
+      <div class="sub">品牌 <b>Ikarao</b> · 美国站 <span class="term" title="SQP＝亚马逊官方的“搜索查询绩效”报告(Search Query Performance),本页所有数据的来源:每个关键词在整个市场的搜索/点击/加购/成交,以及我们品牌拿到的部分。">SQP</span> · Q1 市场与季节 · <span id="rng"></span></div>
+    </div>
+    <div>
+      <div class="seg-lab">市场口径 <span class="term" title="两种统计范围。核心整机:只算“卡拉OK整机”类搜索词(剔掉麦克风等配件词);宽口径:把所有相关词都算进来。切换会改变下面所有数字。">(?)</span></div>
+      <div class="seg" id="segUni">
+        <button data-v="core" class="on">核心整机</button>
+        <button data-v="wide">宽口径</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="mod" id="Q1">
+    <div class="mhead">
+      <span class="q">Q1</span><h2>市场在增长吗？季节性多强？</h2>
+      <span class="badge-basis" id="basis"></span>
+    </div>
+    <div class="mbody">
+      <div class="headline" id="headline"></div>
+      <div class="kpirow" id="kpis"></div>
+
+      <div class="sec-lab">趋势图 · 今年 vs 去年(逐月)</div>
+      <div class="charts">
+        <div class="chart-card"><h3>大盘搜索量（整个市场的搜索次数）</h3><div class="cap">默认只看上半年(2—6月)对比；<b>拖动下方滑块 / 滚轮缩小</b>可拉出 11-12 月旺季。实线圆点＝2026、虚线方点＝2025</div><div class="ech" id="ch-demand"></div></div>
+        <div class="chart-card"><h3>大盘成交量（整个市场的下单数）</h3><div class="cap">默认只看上半年(2—6月)对比；<b>拖动下方滑块 / 滚轮缩小</b>可拉出 11-12 月旺季。实线圆点＝2026、虚线方点＝2025</div><div class="ech" id="ch-order"></div></div>
+      </div>
+      <div class="combined" id="combined"></div>
+
+      <div class="sec-lab">解读与建议</div>
+      <div class="acts" id="acts"></div>
+
+      <details class="audit" id="audit">
+        <summary>展开审计 · 每个数字怎么来的、为什么这么比</summary>
+        <div class="abox" id="auditbox"></div>
+      </details>
+
+      <div class="foot" id="foot"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const Q1 = {"months":["2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06"],"core":{"2025-02":{"mkt_sv":593545,"mkt_ord":14484,"my_ord":426,"imp_share":8.4198,"clk_share":6.3436,"atc_share":3.9554,"ord_share":2.9412},"2025-03":{"mkt_sv":636522,"mkt_ord":16685,"my_ord":439,"imp_share":8.3176,"clk_share":5.9831,"atc_share":3.6568,"ord_share":2.6311},"2025-04":{"mkt_sv":607939,"mkt_ord":15079,"my_ord":466,"imp_share":7.8644,"clk_share":5.6864,"atc_share":3.7187,"ord_share":3.0904},"2025-05":{"mkt_sv":674652,"mkt_ord":17066,"my_ord":690,"imp_share":10.0436,"clk_share":7.7563,"atc_share":5.1689,"ord_share":4.0431},"2025-06":{"mkt_sv":679145,"mkt_ord":17033,"my_ord":732,"imp_share":10.1147,"clk_share":7.2844,"atc_share":4.8046,"ord_share":4.2975},"2025-07":{"mkt_sv":901479,"mkt_ord":20426,"my_ord":955,"imp_share":11.1108,"clk_share":8.0598,"atc_share":4.9036,"ord_share":4.6754},"2025-08":{"mkt_sv":812445,"mkt_ord":19124,"my_ord":925,"imp_share":11.3877,"clk_share":8.4058,"atc_share":5.0164,"ord_share":4.8369},"2025-09":{"mkt_sv":794270,"mkt_ord":18475,"my_ord":729,"imp_share":9.7217,"clk_share":7.1415,"atc_share":4.1395,"ord_share":3.9459},"2025-10":{"mkt_sv":1015052,"mkt_ord":22419,"my_ord":883,"imp_share":10.0064,"clk_share":6.873,"atc_share":3.8668,"ord_share":3.9386},"2025-11":{"mkt_sv":2117933,"mkt_ord":53548,"my_ord":2212,"imp_share":9.8076,"clk_share":6.3305,"atc_share":3.5883,"ord_share":4.1309},"2025-12":{"mkt_sv":2966137,"mkt_ord":112019,"my_ord":3432,"imp_share":7.9348,"clk_share":4.9478,"atc_share":2.9337,"ord_share":3.0638},"2026-01":{"mkt_sv":835760,"mkt_ord":16608,"my_ord":737,"imp_share":8.699,"clk_share":7.1659,"atc_share":4.8488,"ord_share":4.4376},"2026-02":{"mkt_sv":849005,"mkt_ord":13721,"my_ord":655,"imp_share":12.9111,"clk_share":8.5021,"atc_share":5.4476,"ord_share":4.7737},"2026-03":{"mkt_sv":804161,"mkt_ord":14793,"my_ord":583,"imp_share":10.9972,"clk_share":6.5574,"atc_share":4.4733,"ord_share":3.9411},"2026-04":{"mkt_sv":594887,"mkt_ord":14453,"my_ord":566,"imp_share":9.7165,"clk_share":6.749,"atc_share":4.6806,"ord_share":3.9161},"2026-05":{"mkt_sv":671268,"mkt_ord":15983,"my_ord":753,"imp_share":9.5448,"clk_share":8.072,"atc_share":5.3759,"ord_share":4.7113},"2026-06":{"mkt_sv":703327,"mkt_ord":15854,"my_ord":886,"imp_share":10.0662,"clk_share":7.9097,"atc_share":5.5908,"ord_share":5.5885}},"wide":{"2025-02":{"mkt_sv":693670,"mkt_ord":17894,"my_ord":429,"imp_share":7.3421,"clk_share":5.4564,"atc_share":3.3883,"ord_share":2.3975},"2025-03":{"mkt_sv":720259,"mkt_ord":19418,"my_ord":441,"imp_share":7.4365,"clk_share":5.3152,"atc_share":3.2396,"ord_share":2.2711},"2025-04":{"mkt_sv":685403,"mkt_ord":17773,"my_ord":471,"imp_share":7.067,"clk_share":5.0813,"atc_share":3.2972,"ord_share":2.6501},"2025-05":{"mkt_sv":785864,"mkt_ord":20815,"my_ord":697,"imp_share":8.7885,"clk_share":6.7043,"atc_share":4.4264,"ord_share":3.3485},"2025-06":{"mkt_sv":763324,"mkt_ord":19870,"my_ord":736,"imp_share":9.0842,"clk_share":6.5348,"atc_share":4.2668,"ord_share":3.7041},"2025-07":{"mkt_sv":1031173,"mkt_ord":24287,"my_ord":966,"imp_share":9.8486,"clk_share":7.1147,"atc_share":4.2902,"ord_share":3.9774},"2025-08":{"mkt_sv":930812,"mkt_ord":22815,"my_ord":931,"imp_share":10.0081,"clk_share":7.3978,"atc_share":4.3901,"ord_share":4.0806},"2025-09":{"mkt_sv":877418,"mkt_ord":20896,"my_ord":734,"imp_share":8.8007,"clk_share":6.5387,"atc_share":3.7948,"ord_share":3.5126},"2025-10":{"mkt_sv":1127858,"mkt_ord":25957,"my_ord":888,"imp_share":9.0572,"clk_share":6.2397,"atc_share":3.4955,"ord_share":3.421},"2025-11":{"mkt_sv":2306953,"mkt_ord":59189,"my_ord":2224,"imp_share":9.0648,"clk_share":5.8621,"atc_share":3.3131,"ord_share":3.7575},"2025-12":{"mkt_sv":3252508,"mkt_ord":123955,"my_ord":3443,"imp_share":7.2862,"clk_share":4.5386,"atc_share":2.6844,"ord_share":2.7776},"2026-01":{"mkt_sv":948911,"mkt_ord":20258,"my_ord":745,"imp_share":7.748,"clk_share":6.2872,"atc_share":4.1743,"ord_share":3.6776},"2026-02":{"mkt_sv":916512,"mkt_ord":16173,"my_ord":659,"imp_share":11.9445,"clk_share":7.6705,"atc_share":4.7918,"ord_share":4.0747},"2026-03":{"mkt_sv":867372,"mkt_ord":17219,"my_ord":587,"imp_share":10.1823,"clk_share":5.9636,"atc_share":3.9824,"ord_share":3.409},"2026-04":{"mkt_sv":671185,"mkt_ord":17369,"my_ord":570,"imp_share":8.6349,"clk_share":6.0078,"atc_share":4.08,"ord_share":3.2817},"2026-05":{"mkt_sv":765068,"mkt_ord":19297,"my_ord":761,"imp_share":8.4125,"clk_share":7.1513,"atc_share":4.6749,"ord_share":3.9436},"2026-06":{"mkt_sv":793135,"mkt_ord":18903,"my_ord":901,"imp_share":8.9479,"clk_share":7.0196,"atc_share":4.8589,"ord_share":4.7664}},"derived":{"core":{"cvr25":2.52,"cvr26":2.06,"cvr_pp":-0.45,"rr25":551,"rr26":689,"decSvX":4.65,"decOdX":6.97,"q4floor":5644,"q4target":7059,"basket":{"stable_n":236,"all_n":1911,"cov_pct":91.2}},"wide":{"cvr25":2.62,"cvr26":2.22,"cvr_pp":-0.41,"rr25":555,"rr26":696,"decSvX":4.46,"decOdX":6.47,"q4floor":5667,"q4target":7105,"basket":{"stable_n":244,"all_n":2009,"cov_pct":89.2}}}};
+const MONTHS = Q1.months;
+// 跨报告事实(切片数据无,来自搜索目录绩效/热门搜索词,品牌级,core/wide通用)
+const XREP = {cat_ord:32,cat_rev:27,our_cvr25:3.09,our_cvr26:3.65,ctr25:1.20,ctr26:0.99,imp_pct:36,clk_pct:12,new_sv:41,new_cvr:0.45,drop_new_pct:44,cyy:'B0D1VJMSQG',cyy25:11,cyy26:32};
+const mcvr = (uni,ym)=>{const r=Q1[uni][ym]; return r? r.mkt_ord/r.mkt_sv*100 : null;};
+let S = { uni:'core' };
+const el = id => document.getElementById(id);
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const fmtK = n => Math.abs(n)>=1e6 ? (n/1e6).toFixed(2)+'M' : Math.abs(n)>=1e3 ? Math.round(n/1e3)+'k' : Math.round(n);
+const fmtInt = n => Math.round(n).toLocaleString('en-US');
+const g = (uni,ym) => Q1[uni][ym] || null;
+const arrow = d => d>0?'▲':d<0?'▼':'▬';
+const cl = d => d>0?'up':d<0?'down':'';
+const pctTxt = d => (d>=0?'+':'−')+Math.abs(d).toFixed(1)+'%';
+const ppTxt  = d => (d>=0?'+':'−')+Math.abs(d).toFixed(2)+'pp';
+const T = (term,tip) => '<span class="term" title="'+tip.replace(/"/g,'&quot;')+'">'+term+'</span>';
+
+function sumH1(uni, yr, field){ let s=0; for(let m=2;m<=6;m++){const r=g(uni,yr+'-'+String(m).padStart(2,'0')); if(r) s+=r[field];} return s; }
+function calc(){
+  const u=S.uni, D=Q1.derived[u];
+  const sv25=sumH1(u,'2025','mkt_sv'), sv26=sumH1(u,'2026','mkt_sv');
+  const od25=sumH1(u,'2025','mkt_ord'), od26=sumH1(u,'2026','mkt_ord');
+  const my25=sumH1(u,'2025','my_ord'), my26=sumH1(u,'2026','my_ord');
+  const sh25=od25?my25/od25*100:0, sh26=od26?my26/od26*100:0;
+  return {sv25,sv26,od25,od26,my25,my26,sh25,sh26,
+    svYoY:(sv26/sv25-1)*100, odYoY:(od26/od25-1)*100, myYoY:(my26/my25-1)*100, shPP:sh26-sh25, D};
+}
+
+/* ===== 徽标 + 头条(两行:结论 + 明细) ===== */
+function renderBasis(){
+  el('basis').textContent = '口径：'+(S.uni==='core'?'核心整机':'宽口径')+' · 上半年同比';
+}
+function renderHeadline(){
+  const c=calc();
+  const shareTip='购买份额＝我们品牌卖出量 ÷ 整个市场卖出量。3.43%→4.60% 是涨了 1.18 个百分点(不是 1.18%)。';
+  const cvrTip='市场转化率＝整个市场“下单数 ÷ 搜索次数”。它掉了,说明搜的人里真买的比例在下降。';
+  el('headline').innerHTML =
+    '<span class="concl">别被“搜索涨、成交跌”吓到——那主要是年初两个月的搜索灌水、4 月起已回归；我们真实销量逆势在涨。</span>'+
+    '<div class="detail">整个市场：'+T('搜索次数','大盘搜索量＝所有卖家在这些关键词上被搜到的总次数')+' <b>'+fmtInt(c.sv26)+
+    '</b>（同比 <span class="'+cl(c.svYoY)+'">'+arrow(c.svYoY)+pctTxt(c.svYoY)+'</span>），可'+T('成交','下单/卖出量')+
+    '却只有 <b>'+fmtInt(c.od26)+'</b>（同比 <span class="'+cl(c.odYoY)+'">'+arrow(c.odYoY)+pctTxt(c.odYoY)+
+    '</span>）——<b>搜的人更多、真买的人却更少</b>（'+T('市场转化率',cvrTip)+' '+c.D.cvr25.toFixed(2)+'%→<b>'+c.D.cvr26.toFixed(2)+
+    '%</b>）。而我们品牌自己：'+T('成交单量','我们品牌卖出的台数')+' '+fmtInt(c.my25)+'→<b>'+fmtInt(c.my26)+
+    '</b>（<span class="'+cl(c.myYoY)+'">'+arrow(c.myYoY)+pctTxt(c.myYoY)+'</span>），'+T('购买份额',shareTip)+' '+
+    c.sh25.toFixed(2)+'%→<b>'+c.sh26.toFixed(2)+'%</b>（<span class="'+cl(c.shPP)+'">'+ppTxt(c.shPP)+
+    '</span>）——<b>在缩量的市场里，我们卖得更多、占的比例更高</b>。'+
+    '</div><div class="cav">口径：上半年＝2 月至 6 月，共 5 个对照月（缺 2025 年 1 月、不含 11—12 月旺季）。⚠ 市场转化率的下滑主要来自 2—3 月的一次性搜索灌水、4 月起已回归（见审计③），非持续萎缩。详细推导见「展开审计」。</div>';
+}
+
+/* ===== KPI(去重:与头条互补,不复读) ===== */
+function renderKpis(){
+  const c=calc();
+  const cards=[
+    {hero:1,lab:T('品牌成交单量','我们品牌卖出的台数(上半年合计)'),val:fmtInt(c.my26)+' 单',sub:'同比 <span class="'+cl(c.myYoY)+'">'+pctTxt(c.myYoY)+'</span>'},
+    {lab:T('我们的购买份额','品牌卖出 ÷ 全市场卖出'),val:c.sh26.toFixed(2)+'%',sub:'同比 <span class="'+cl(c.shPP)+'">'+ppTxt(c.shPP)+'</span>'},
+    {lab:T('市场转化率','全市场:下单数 ÷ 搜索次数'),val:c.D.cvr26.toFixed(2)+'%',sub:'同比 <span class="'+cl(c.D.cvr_pp)+'">'+ppTxt(c.D.cvr_pp)+'</span>（主要2—3月灌水，4月起已回归）'},
+    {lab:'2025 Q4 → 2026 目标',val:fmtInt(c.D.q4floor)+'→'+fmtInt(c.D.q4target),sub:'品牌 11+12 月：去年地板 → 按 +25% 外推目标'},
+  ];
+  el('kpis').innerHTML=cards.map(k=>'<div class="kpi'+(k.hero?' hero':'')+'"><div class="lab">'+k.lab+'</div><div class="val">'+k.val+'</div><div class="sub">'+k.sub+'</div></div>').join('');
+}
+
+/* ===== ECharts 年对年(实心圆2026/空心方2025 + 端点标注 + H1 markArea) ===== */
+let charts={};
+function yoySeries(uni,field,color){
+  const y25=[],y26=[];
+  for(let m=1;m<=12;m++){const k=String(m).padStart(2,'0');const a=g(uni,'2025-'+k),b=g(uni,'2026-'+k);
+    y25.push(a?a[field]:null);y26.push(b?b[field]:null);}
+  return [
+    {name:'2025',type:'line',data:y25,connectNulls:false,symbol:'rect',symbolSize:8,
+     lineStyle:{type:'dashed',width:2,color:color},itemStyle:{color:'#fff',borderColor:color,borderWidth:2},
+     emphasis:{focus:'series'}},
+    {name:'2026',type:'line',data:y26,connectNulls:false,symbol:'circle',symbolSize:8,
+     lineStyle:{type:'solid',width:2.8,color:color},itemStyle:{color:color},
+     emphasis:{focus:'series'},
+     markArea:{silent:true,itemStyle:{color:'rgba(47,109,246,0.06)'},data:[[{xAxis:'2',name:'对比区'},{xAxis:'6'}]],label:{show:false}},
+     markLine:{silent:true,symbol:'none',lineStyle:{type:'dotted',width:1,color:css('--muted')},data:[{xAxis:'6',label:{show:true,position:'end',formatter:'2026 数据止于 6 月',fontSize:11,color:css('--muted')}}]}},
+  ];
+}
+function drawChart(id,field,color,unit){
+  let c=charts[id];
+  if(!c){c=charts[id]=echarts.init(el(id)); new ResizeObserver(()=>c.resize()).observe(el(id));}
+  c.setOption({
+    textStyle:{fontSize:14},
+    grid:{left:52,right:56,top:44,bottom:66},
+    legend:{data:['2026','2025'],top:8,left:50,itemWidth:26,itemHeight:10,textStyle:{fontSize:13,color:css('--muted')}},
+    tooltip:{trigger:'axis',textStyle:{fontSize:14},valueFormatter:v=>v==null?'—':fmtInt(v)+unit},
+    dataZoom:[
+      {type:'inside',filterMode:'filter',startValue:'2',endValue:'6'},
+      {type:'slider',filterMode:'filter',startValue:'2',endValue:'6',bottom:8,height:20,
+        textStyle:{fontSize:12,color:css('--muted')},borderColor:'transparent',
+        fillerColor:'rgba(47,109,246,0.10)',handleStyle:{color:'#fff',borderColor:css('--brand')},
+        dataBackground:{lineStyle:{color:css('--line')},areaStyle:{color:css('--line2')}},
+        selectedDataBackground:{lineStyle:{color:css('--brand')},areaStyle:{color:'rgba(47,109,246,0.12)'}}}
+    ],
+    xAxis:{type:'category',data:['1','2','3','4','5','6','7','8','9','10','11','12'],boundaryGap:false,
+      axisLabel:{fontSize:14,color:css('--muted'),formatter:v=>v+'月'},axisLine:{lineStyle:{color:css('--line')}}},
+    yAxis:{type:'value',axisLabel:{fontSize:14,color:css('--muted'),formatter:v=>fmtK(v)},splitLine:{lineStyle:{color:css('--line2')}}},
+    series:yoySeries(S.uni,field,color)
+  },true);
+}
+function renderCharts(){
+  drawChart('ch-demand','mkt_sv',css('--demand'),'');
+  drawChart('ch-order','mkt_ord',css('--order'),' 单');
+  const c=calc();
+  el('combined').innerHTML='<b>把两张图合起来看：</b>左图（搜索）实线在往上、右图（成交）实线在往下——<b>一升一降，就是"搜的人更多、买的人更少"的背离</b>。灰色阴影是本报告对比的上半年（2—6 月），年底那座高峰是圣诞旺季（见下方第 3 条建议）。';
+}
+
+/* ===== 解读(顶层简洁:数据/建议双标签拆开) ===== */
+function renderActs(){
+  const c=calc();
+  const acts=[
+    {tag:'数据支撑',title:'“背离”主要是年初一次性搜索灌水，不是需求萎缩',
+     body:'逐月看市场转化率：2026 年 2 月 <b>'+mcvr(S.uni,'2026-02').toFixed(2)+'%</b>、3 月 <b>'+mcvr(S.uni,'2026-03').toFixed(2)+'%</b> 异常低，4—6 月已回到 '+mcvr(S.uni,'2026-04').toFixed(2)+'%／'+mcvr(S.uni,'2026-05').toFixed(2)+'%／'+mcvr(S.uni,'2026-06').toFixed(2)+'%，逼近去年同期。早春一批低转化新词（约 '+XREP.new_sv+' 万搜索、转化率仅 '+XREP.new_cvr+'%，占跌幅约 '+XREP.drop_new_pct+'%）涌入把 H1 平均拉低——别把它当持续萎缩。（旧假设“儿童泛需求”不成立：儿童词只占增长约 8%、转化率反而高达 4.8%。）'},
+    {tag:'数据支撑',title:'我们自己是健康的（搜索目录绩效交叉验证）',
+     body:'5 款主力上半年成交 <span class="up">+'+XREP.cat_ord+'%</span>、营收 <span class="up">+'+XREP.cat_rev+'%</span>，且每款自己的转化率都在升（合计 '+XREP.our_cvr25+'%→'+XREP.our_cvr26+'%）。市场转化率在跌、我们自己在升——是市场构成的事，不是我们变差。在竞争加剧的市场里做出真实增量，不是靠缩水的蛋糕升份额。'},
+    {tag:'专家建议',title:'唯一要修的是“被看到没被点”（CTR），而且不花广告费',
+     body:'主力曝光 <span class="up">+'+XREP.imp_pct+'%</span>、点击只 +'+XREP.clk_pct+'%，CTR '+XREP.ctr25.toFixed(2)+'%→<span class="down">'+XREP.ctr26.toFixed(2)+'%</span>。这是“$300 机器摆进便宜货货架、被看见没被点”的点击关——靠主图／价格呈现／评分优化解决，不是加广告。这替换了先前“先拆成因”的占位：成因已拆清，动作就是修 CTR。'},
+    {tag:'专家建议',title:'外部盯低价竞品 CYY，用高毛利款守特征词护城河',
+     body:'头号对手 CYY（便携低价机 '+XREP.cyy+'）点击份额翻三倍到 '+XREP.cyy26+'%，在通用词上打价格。我们不跟价格战：用高毛利 X1／S1／S3 守“带屏／带词／professional”特征词（这些词我们已领先），低毛利 S2／X2 留作走量、别逼它们贴身肉搏。内容词（karaoke youtube 等）转化≈0、不追；但“带词显示”是机器功能词、我们已是赢家，要守不要弃。'},
+    {tag:'专家建议',title:'下半年绑季节性 + 儿童新品补缺口',
+     body:'12 月是全年峰值（搜索约上半年月均的 '+c.D.decSvX.toFixed(1)+' 倍、成交 '+c.D.decOdX.toFixed(1)+' 倍），备货与广告须 10 月前就位；以去年 Q4 品牌 '+fmtInt(c.D.q4floor)+' 单为地板、按 +25% 外推约 '+fmtInt(c.D.q4target)+' 单为目标。儿童词是明确的产品缺口——推进儿童新品（B0GVML8C2L）绑 Q4，比纠结内容词更值钱。'},
+  ];
+  el('acts').innerHTML=acts.map(a=>'<div class="act"><div class="act-head"><span class="tag '+(a.tag==='数据支撑'?'data':'exp')+'">'+a.tag+'</span><span class="act-title">'+a.title+'</span></div><div class="act-body">'+a.body+'</div></div>').join('');
+}
+
+/* ===== 审计层(每个数字的推导 + 为什么这么比) ===== */
+function renderAudit(){
+  const c=calc(),D=c.D;
+  el('auditbox').innerHTML=
+   '<h4>① 这份报告在比哪段时间</h4>'+
+   '<ul><li>"上半年同比" = <span class="k">2026 年 2—6 月</span> 对比 <span class="k">2025 年 2—6 月</span>，共 5 个对照月。</li>'+
+   '<li>缺 2025 年 1 月（去年数据不全），且不含 11—12 月旺季——所以是"淡季 5 个月"的方向性对比，别当精确定论。</li></ul>'+
+   '<h4>② 头条数字怎么算的</h4>'+
+   '<ul><li>大盘搜索同比 = 2026H1 '+fmtInt(c.sv26)+' ÷ 2025H1 '+fmtInt(c.sv25)+' − 1 = <span class="k">'+pctTxt(c.svYoY)+'</span></li>'+
+   '<li>大盘成交同比 = '+fmtInt(c.od26)+' ÷ '+fmtInt(c.od25)+' − 1 = <span class="k">'+pctTxt(c.odYoY)+'</span></li>'+
+   '<li>品牌成交同比 = '+fmtInt(c.my26)+' ÷ '+fmtInt(c.my25)+' − 1 = <span class="k">'+pctTxt(c.myYoY)+'</span></li>'+
+   '<li>购买份额 = 品牌成交 ÷ 大盘成交（按每个词的体量加权）：'+c.sh25.toFixed(2)+'% → '+c.sh26.toFixed(2)+'%（'+ppTxt(c.shPP)+'）</li></ul>'+
+   '<h4>③ “背离”拆解：主要是年初灌水，不是结构性萎缩</h4>'+
+   '<ul><li>市场转化率 H1 平均 <span class="k">'+D.cvr25.toFixed(2)+'%</span> → <span class="k">'+D.cvr26.toFixed(2)+'%</span>（'+ppTxt(D.cvr_pp)+'），但<b>逐月看是一次性尖峰</b>：2026 年 2 月 <span class="k">'+mcvr(S.uni,'2026-02').toFixed(2)+'%</span>、3 月 <span class="k">'+mcvr(S.uni,'2026-03').toFixed(2)+'%</span> 异常低，4—6 月 '+mcvr(S.uni,'2026-04').toFixed(2)+'%／'+mcvr(S.uni,'2026-05').toFixed(2)+'%／'+mcvr(S.uni,'2026-06').toFixed(2)+'% 已回归至接近 2025 同期。H1 平均把一个两月尖峰摊成了看似持久的缺口。</li>'+
+   '<li>成因<b>三分</b>（不是两分）：①同词转化率下降 ②词构成变化 ③<b>新词稀释</b>——约 '+XREP.new_sv+' 万搜索的新词以仅 '+XREP.new_cvr+'% 的转化率涌入，占整体跌幅约 <span class="k">'+XREP.drop_new_pct+'%</span>、且 83% 集中在 2—3 月，是最大单一推手。</li>'+
+   '<li>❌ 修正：先前“儿童泛需求灌水”的假设不成立——儿童词只占搜索增长约 8%、转化率高达 4.8%（会买）。真正的低转化来源是内容/找歌类词（karaoke youtube 等）与早春新词。</li>'+
+   '<li>⚠ 待排查：2—3 月为何突然灌水又回落，疑与亚马逊 Rufus/AI 搜索泛匹配或站内展示位调整有关，需另证，暂不咬死。</li></ul>'+
+   '<h4>③b 交叉验证：我们健不健康（搜索目录绩效 + 热门搜索词）</h4>'+
+   '<ul><li><span class="k">搜索目录绩效</span>：5 主力 H1 成交 <span class="k">+'+XREP.cat_ord+'%</span>、营收 <span class="k">+'+XREP.cat_rev+'%</span>，自家漏斗转化率 '+XREP.our_cvr25+'%→'+XREP.our_cvr26+'%（升）——市场 CVR 跌、我们自己在升，铁证是市场构成、非我们变差。</li>'+
+   '<li>唯一红灯：我们 CTR <span class="k">'+XREP.ctr25.toFixed(2)+'%→'+XREP.ctr26.toFixed(2)+'%</span>（曝光 +'+XREP.imp_pct+'%、点击仅 +'+XREP.clk_pct+'%）——被看到没被点，免费可修。</li>'+
+   '<li><span class="k">热门搜索词</span>：头号竞品 CYY（'+XREP.cyy+'）点击份额 '+XREP.cyy25+'%→'+XREP.cyy26+'%（低价便携机）；“带词显示/带屏”特征词的赢家榜含我们自己的 X2——是护城河、不是垃圾流量。</li></ul>'+
+   '<h4>④ +25% 该怎么看（为什么别过读）</h4>'+
+   '<ul><li>+25% = 同期同比（2026H1 品牌 '+fmtInt(c.my26)+' ÷ 2025H1 '+fmtInt(c.my25)+'）。</li>'+
+   '<li>同季逐月速度：2026H1 <span class="k">'+D.rr26+' 台/月</span> vs 2025H1 <span class="k">'+D.rr25+' 台/月</span> = 也是 +25%——说明不是虚高。</li>'+
+   '<li>但 2025 上半年是品牌爬坡期、基数低，+25% 有一部分来自低基数；'+D.rr26+' 台/月仍是淡季速度，旺季目标要更高。</li>'+
+   '<li>⚠ 注意别踩的坑：不要拿 2026 淡季的 '+D.rr26+' 台/月 去比 2025 下半年（旺季前爬坡）的更高速度——那是不同季节，会假显"萎缩"。同季比才对。</li></ul>'+
+   '<h4>⑤ 季节峰值倍数（同年口径）</h4>'+
+   '<ul><li>2025 年 12 月 ÷ 2025 上半年月均 = 搜索 <span class="k">'+D.decSvX.toFixed(2)+'×</span>、成交 <span class="k">'+D.decOdX.toFixed(2)+'×</span>。分子分母同年（勿用今年上半年做分母，会算出不同的倍数）。</li></ul>'+
+   '<h4>⑥ 这个对比可靠吗（篮子覆盖率）</h4>'+
+   '<ul><li>SQP 每月上榜的关键词会换血，跨月直接相加有风险。这份上半年同比落在<span class="k">稳定篮子</span>上：<span class="k">'+D.basket.stable_n+' 个核心词</span>在两年的 2—6 月都稳定出现，覆盖了 2026 上半年成交的 <span class="k">'+D.basket.cov_pct+'%</span>——所以对比可靠，换血主要影响长尾（约 '+(100-D.basket.cov_pct).toFixed(1)+'% 成交）。</li></ul>';
+}
+
+function rerenderAll(){ renderBasis(); renderHeadline(); renderKpis(); renderCharts(); renderActs(); renderAudit();
+  el('foot').innerHTML='<b>口径说明。</b>'+T('份额','品牌捕获量÷全市场量')+'＝品牌卖出 ÷ 全市场卖出（按词体量加权）；<b>核心整机</b>＝含 karaoke 词根（含错拼，并入 singing machine／ktv）、剔除麦克风等配件词，<b>宽口径</b>＝全部相关词。同比只有 2026 年 2—6 月能对上 2025 同月（缺 2025-01），不含 11—12 月旺季，方向性看待。稳定篮子覆盖 2026 上半年成交约 '+calc().D.basket.cov_pct+'%。切换上方"市场口径"，头条、图表、指标、审计层全部同步重算。'; }
+function init(){
+  el('rng').textContent = MONTHS[0]+' ~ '+MONTHS[MONTHS.length-1];
+  el('segUni').querySelectorAll('button').forEach(b=> b.onclick=()=>{
+    S.uni=b.dataset.v; el('segUni').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); rerenderAll();
+  });
+  rerenderAll();
+  window.addEventListener('resize',()=>Object.values(charts).forEach(c=>c.resize()));
+}
+init();
+</script>
+</body>
+</html>
