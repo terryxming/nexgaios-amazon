@@ -2,9 +2,9 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "q1proto",
+      "name": "ikarao-v3-dashboard",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8794", "--directory", "C:\\Users\\terry\\AppData\\Local\\Temp\\claude\\D--nexgaios-amazon\\e01e5f80-7f32-4678-8397-81f8169ef4ff\\scratchpad"],
+      "runtimeArgs": ["-m", "http.server", "8794", "--bind", "127.0.0.1", "--directory", "."],
       "port": 8794
     }
   ]

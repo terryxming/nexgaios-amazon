@@ -1,56 +1,49 @@
-# 交接 · Ikarao V3 增长仪表盘
+# 交接 · Ikarao SQP 仪表盘
 
-> 开工先读本文 + [架构契约](品牌分析/仪表盘/v3-build/q1-preview/dashboard-architecture.md) + [Q1需求清单](品牌分析/仪表盘/v3-build/q1-preview/q1-requirements-and-review-log.md)。设计源 [06蓝图](品牌分析/仪表盘/06_SQP趋势仪表盘V3蓝图.md)、结论 [08复盘](品牌分析/仪表盘/08_2026H1复盘与H2增量.md)、口径 [00总纲](品牌分析/00_三报告口径与边界总纲.md)、踩坑 [lessons](docs/lessons-learned.md)、开发史 [dev-log](docs/dev-log.md)。
-> 更新：2026-07-11（本会话为**纪律复诵 hook 旁支**，未推进仪表盘主线；主线状态原样保留）。git：`github.com/terryxming/nexgaios-amazon`（**public、装敏感数据、待转 private**）。
-
-
-## 当前状态：Q1 仪表盘在按锁定架构重做（主线，未变）
-
-主线 = V3 六问题仪表盘（Q1–Q6）。上一段工作集中做 **Q1**，经多轮迭代 + Terry 批评，**已确认并锁定整体架构**，Q1 做成 **v8 样板**：
-
-- **架构已锁（Terry 确认，见 dashboard-architecture.md）**：1440px 宽屏（不做手机）｜全局外壳（头+吸顶 Tab 导航 Q1–Q6，一次显一个问题）｜每问题固定 **6 层模板**（问题头/结论条/关键指标/图表/解读要点/审计）｜图表规范：**领星 1 图 12 月双线(2025/2026)+dataZoom 停 H1；SQP 需求(搜索)+成交 各 1 图双线**｜统一配色(我们=绿/市场=slate)、源标签 [SQP]/[领星]、间距/标题/标签一致。
-- **Q1 v8 页面**：`品牌分析/仪表盘/07_Q1_稳定篮子预览.html`（自包含；生成器 `v3-build/q1-preview/gen_dash_v8.py` + 数据 `q1_v6_data.json`）。预览：`launch.json` 的 `ikarao-v3-dashboard`（8794 口 serve 仓库根）→ 开 `07_Q1_稳定篮子预览.html`。
-- **口径已纠正并提交（`61f00f8`）**：SQP 头条改**稳定篮子**——市场搜索 −0.9%/成交 −7.6%、我方 SQP 归因 +13.6%、搜索侧份额 3.07→3.77%(+0.70pp)；**领星真实 +24.6% 不变（锚）**；撤"SQP≈领星双源互证"（巧合）。新词拆解：换血/长尾词搜索 +133% 但只搜不买（转化 0.9%）。（这坑是 Codex 审查发现、我复算确认，见 lessons"稳定篮子 vs 全榜"。）
-
-**⚠️ 上一段最大教训（Terry 反复批评）**：别"顺手重构 / 整页重写"——每次从头写就丢上次要求，违反 CLAUDE.md §4/§3/§6。**架构已锁 → 之后只做定点手术改，每改对照 Q1 需求清单(R1–R10) + 4 常驻监工审。**
+> 开工先读本文 + [00 三报告口径总纲](品牌分析/00_三报告口径与边界总纲.md) + [耐用事实 project-context](docs/project-context.md) + [工作约定 working-agreements](docs/working-agreements.md)。设计源 [06 蓝图](品牌分析/仪表盘/06_SQP趋势仪表盘V3蓝图.md)、Q1 样板 [07 稳定篮子预览](品牌分析/仪表盘/07_Q1_稳定篮子预览.html)（生成器/规格在 `v3-build/q1-preview/`）。
+>
+> 更新：2026-07-11。git：`github.com/terryxming/nexgaios-amazon`（public、装敏感数据、待转 private）。
 
 
-### 旁支已闭环：纪律复诵 hook（2026-07-11，本会话）
+## 当前状态：仓库已重置到可信基线
 
-为对冲长会话中 CLAUDE.md 纪律的位置衰减，新增按维度路由的"纪律复诵 hook"，已 commit+push（`130a13f`）、跑通、上远端：
+本会话末尾做了一次**清库重置**：Terry 对堆积的派生/历史/争议内容失去信任，只保留可信基座，其余删除、从头重建。
 
-- **三 gate**（覆盖 §1–§14）：`SessionStart`→§14 开工巡检；`UserPromptSubmit`→动手前+交付前(§1/2/5/6/7/9/10/11)每轮注入；`PreToolUse(Write|Edit|NotebookEdit)`→落盘前(§3/4/8/12/13)。只读 CLAUDE.md 的 `DISCIPLINE:SHARED` 全文、不 fork（单一事实源）；异常 fail-open。
-- **文件**：`.claude/hooks/discipline-hook.py` + `.claude/settings.json`（随仓库同步）；决策留痕 [ADR-0005](docs/decisions/0005-discipline-reinjection-hooks.md)。
-- **弃用 Stop**：原挂 Stop 的交付前维度因 Stop 返回 additionalContext 会触发再入/循环，已并入 UserPromptSubmit（见 lessons"Stop 再入"）。
-- **成本**：每轮 `UserPromptSubmit` 约 5.0k tok、落盘另 +3.0k；嫌重可把交付前从每轮挪到只落盘时触发（prompt 降回 ~2k）。
+保留下来的可信基座：
+
+- **三报告原始数据 + 字典**：`搜索查询绩效报告/`(01/02/03)、`搜索目录绩效/`(01/02)、`热门搜索词/`(01/02)。
+- **口径**：`00_三报告口径与边界总纲.md`。
+- **设计 + Q1 样板**：`06` 蓝图、`07_Q1_稳定篮子预览.html`（已定稿 v8）+ `echarts.min.js` + `v3-build/q1-preview/`（生成器 `gen_dash_v8.py`、数据 `q1_v6_data.json`、规格 `dashboard-architecture.md`/`q1-requirements-and-review-log.md`）。
+- **纪律 + 知识**：`CLAUDE.md`/`AGENTS.md` + `.claude/hooks/` + `tools/check-discipline-drift.py`；`docs/project-context.md`/`working-agreements.md`/`decisions/{0001,0005}`。
+
+已删（Codex 原子层数据管线、`08` 复盘、`09` 证据合同、旧仪表盘 `04/05`、ADR-0002/0003/0004、`存档/`、会话 jsonl、dev-log、lessons 等）。**回滚锚点**：重置前 commit = `44f2318`（已提交内容可从 git 历史找回；未跟踪部分——Codex 管线 `data/`、部分脚本、`09`、ADR-0004——已永久删除，需从原始报告重建）。
+
+Q1 仪表盘 `07` 已定稿：口径统一到 **strict_10of10**（份额 3.03→3.75%/+0.71pp、市场可比搜索 −0.9%/成交 −7.6%、我方 SQP 归因 +14.1%、领星真实 +24.6% 为锚）。
 
 
 ## 下一步
 
-1. **派 4 常驻监工审 v8**（亚马逊业务专家/亚马逊新人/前端工程师+UI/UX/数据解读；这轮加"结构一致性"rubric）→ 定点修。（仪表盘主线中断在这一步。）
-2. Q1 定稿后，**按同一 6 层模板 + 图表规范建 Q2–Q6**（数据绑定见架构契约§五）。
-3. **reconcile 两条 Q1 轨道**：Codex 的构建管线（`build_all`→`07_V3_Q1切片.html`，当前是被否的"决策治理版"）vs 我的仪表盘（`07_Q1_稳定篮子预览.html`）——定用哪套或合并。
-4. 处理**未提交的 Codex 大批**（见未决）。
+1. **从保留的三报告原始数据重建权威"原子层"**（不复用被删的 Codex 管线，从零写、配 validator）：SQP 品牌/大盘/5ASIN 四阶(曝光/点击/加购/成交)×逐月×两年(2025-02~2026-06，YoY 仅 Feb–Jun 可对齐)、稳定篮子三口径(strict_10of10 171词 / paired_4of5 240词 / 全榜)；catalog 自家漏斗(ASIN×月)；热门词(前三 ASIN 量化 + 前三品牌仅名)。数字唯一事实源 = build+validator（见 working-agreements「数字只有一个事实源」）。
+2. **建 Q2「我们在赢份额吗」**：SQP 四阶份额 YoY + 份额升幅分解(我方真涨 vs 大盘塌，约六成/四成) + 领星 ASP(结构下沉非旗舰降价)。套 06 蓝图 + 07 的 6 层模板。
+3. 之后 Q3–Q6 按同模板。
 
 
 ## 未决问题
 
-- **一大批 Codex 工程未提交**（`build_all.py`/`validate_build.py`/`build_q1_data.py`/`data/`/`q1-slice-template.html`/`09_商业级分析证据合同.md`/`ADR-0004`/`07_V3_Q1切片.html`重生成/`v3_data.json`重生成/`.claude/launch.json`）。Terry 已定：**保留有用工程；09 那套重合同"先别当定论"（N=1、过度设计、曾把 Codex 带偏）**。本 handoff/dev-log 之前被 Codex 改写过（数据链版），我这次按当前实况覆盖重写。
-- **仓库 public 装敏感数据** → 待转 private 或脱敏（`gh repo edit ... --visibility private`）。
-- **Codex 构建链有同一个稳定篮子口径错**（`build_q1_data.py`/`07_V3_Q1切片.html` 还是全榜）——若保留其工程须先修。
-- Q4 增量口径 +24.6%(保守)/+29.1%(乐观) 待拍板。
-- 数据包（sqp_digests/lingxing_snapshot/生成脚本）多在 scratchpad 未入仓（Q1 相关的已存 `v3-build/q1-preview/`）。
+- **Q2 边界与派生指标**未锁（四阶完整 vs 聚焦、Q2/Q3 的 ASP 分界）。
+- **ASIN 级毛利拿不到**：领星快照只到运营组合级 → Q3/Q6 的 ASIN 毛利需补领星成本数据。
+- **热门词新词/长尾竞品盲区**：报告只给前三、且原 Codex 只 join 了 strict 词；新词竞品格局要直接读原始热门词 CSV。
+- **仓库 public 装敏感数据** → 待转 private 或脱敏。
 
 
 ## 环境备忘
 
 - 领星两店 SID：奥卡-US `7481`、无界-US `12137`。跑中文脚本用 `PYTHONUTF8=1`。
-- **本仓已装纪律复诵 hook**（`.claude/settings.json` + `.claude/hooks/discipline-hook.py`）：每轮/落盘自动注入 CLAUDE.md 纪律，`pull` 后自动生效、无需配置；依赖 `python` 在 PATH。停用只需删 settings.json 的 `hooks` 段。
-- **别重跑 Codex 的 `build_q1_slice.py`**（会生成被否的治理版 07_V3_Q1切片）；我的 Q1 页用 `q1-preview/gen_dash_v8.py`。
-- 关键数字锁定见 `q1-preview/q1-requirements-and-review-log.md`（含 4 监工评审日志）。
-- 4 常驻监工角色：亚马逊业务专家 / 亚马逊新人 / 前端工程师+UI/UX / 数据解读专家；每版都审、含结构一致性。
+- 预览 07：`.claude/launch.json` 的 `ikarao-v3-dashboard`（8794 口 serve 仓库根）→ 开 `品牌分析/仪表盘/07_Q1_稳定篮子预览.html`。07 靠同目录 `echarts.min.js` 渲染。
+- **strict 稳定篮子定义** = 同一词两年 Feb–Jun 全 5 月都在榜（171 词，覆盖搜索侧成交约 90%）；protected facts：搜索 2,872,374→2,845,191、成交 73,556→67,973、我方 2,231→2,546。
+- 三报告联动红线（00 总纲）：SQP↔领星只比增速不对账；catalog↔领星禁求精确占比（毛额vs净额）；热门词竞品 ASIN 仅展示、认 ASIN 不认品牌名。
 
 
-## 本次会话摘要（2026-07-11 · 纪律复诵 hook）
+## 上次会话摘要（2026-07-11）
 
-针对"上下文一长、CLAUDE.md 纪律触发概率变低"，把纪律做成 hook 确定性重注入。先派子代理联网核实 Claude Code hook 语义（哪些事件能注入上下文、matcher/JSON 结构、settings 作用域），确认后按 Terry 定的"路由式、全纪律在场"落地：三 gate 按四维度（开工/动手前/落盘前/交付前）分发 CLAUDE.md 全文，只读 `DISCIPLINE:SHARED` 不 fork。中途实测抓出自己引入的坑——交付前挂 `Stop` 会触发再入（无用户输入却被唤起、有循环风险），改为并入 `UserPromptSubmit`，重测全绿。产出 `.claude/hooks/discipline-hook.py` + `.claude/settings.json` + [ADR-0005](docs/decisions/0005-discipline-reinjection-hooks.md)，commit+push `130a13f`。**仪表盘主线未动**，下一步仍是"派 4 监工审 Q1 v8"。核心教训：落盘类机制必须实测行为、别只信文档描述（Stop 再入即例）。
+先给 Q1 v8 加三处（问题区改「结论+证据」、KPI 补量级、市场成交图叠品牌 YoY 双线），并把口径从 paired 统一到 strict（份额 3.07→3.77 改 3.03→3.75、归因 +13.6→+14.1），审计份额分解 ¾/¼ 复算修正为约六成/四成，并立「数字单一事实源」防漂移规矩、把 06/08 的过时 paired 数覆盖为 strict。随后 Terry 要进 Q2，先查清三报告口径与联动（派子代理：SQP 三层四阶已全、catalog 自家漏斗算法复算无误、热门词确认「前三 ASIN 量化 / 前三品牌仅名」两套独立体系）；核验 Codex 数据层其实正确（validator protected facts = 独立复算值），但 Terry 决定弃用、从零重建。最后对整仓失去信任，执行「重置到可信基线」清库（删派生/历史/争议，修所有保留文档的死链，重写本 handoff）。核心教训：数字只留 build+validator 一处、prose 不自持；派生数据不轻信、要能自己重建才算可信。
