@@ -76,3 +76,13 @@
 - **结论方向不倒**：**领星真实 +24.6% 独立、锚不动**；"市场没自然增长/我们逆势抢份额"成立且**更硬**（稳定篮子直接给"持平略降"，不必再绕"2–3 月灌水"）。
 - **撤"SQP +25% ≈ 领星 +24.6% 双源互证"**——是巧合；稳定篮子上 SQP 仅 +13.6%，差额来自新词/长尾/非搜索渠道（这本身是有用发现，不是矛盾）。
 - **教训：覆盖率 ≠ 口径**。稳定篮子不能只用来算覆盖率、头条却用全榜求和；跨期头条必须落在稳定篮子上重算，全榜降为覆盖率旁注。→ 已固化：08 §一/二、06 §二.7/§四 Q1·Q2 头条口径已纠正；**07 页面与 `build_q1_data.py` 构建链同理待改（Codex 工程侧）**。
+
+
+## Claude Code hook：Stop 返回 additionalContext 会触发再入（2026-07-11）
+
+给 CLAUDE.md 纪律做"复诵 hook"（长会话对冲上下文位置衰减，见 [ADR-0005](decisions/0005-discipline-reinjection-hooks.md)）时，把"交付前"维度挂在 `Stop` 事件、只返回 `hookSpecificOutput.additionalContext`（不带 `decision: block`），本以为是"非阻断的下一轮预热"。实测被打脸：**Stop hook 一有输出就触发再入（continuation）**——没有用户新消息也被重新唤起，每轮收尾被拉回，且有循环风险（Claude Code 正是为此设 `stop_hook_active` 防护位）。当轮"无输入却在跑"就是活复现。
+
+- **教训**：Stop hook 的 `additionalContext` 不是旁注，是"让 Claude 继续干"的信号；要么配 `stop_hook_active` 防循环，要么别拿 Stop 做每轮注入。
+- **能安全注入上下文的只有三个 gate**：`SessionStart`（每会话一次、纯 stdout）、`UserPromptSubmit`（每轮、纯 stdout 进上下文、不再入）、`PreToolUse`（工具前、走 `additionalContext` 不阻断）。每轮注入用 `UserPromptSubmit`，别用 Stop。
+- **再证"改前先验、别信直觉"**：文档说 Stop 能读 additionalContext，我据此以为它是软提醒；真跑起来才暴露再入语义。落盘类机制必须实测行为、不能只读描述。
+- → 已固化：ADR-0005（决策+后果段）；`.claude/hooks/discipline-hook.py` 已弃用 Stop，交付前并入 `UserPromptSubmit`。
