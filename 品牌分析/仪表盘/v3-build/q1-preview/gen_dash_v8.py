@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 """V3 仪表盘 v8: 全局外壳(1440px+吸顶Tab) + Q1样板(6层模板+图表规范) + Q2-Q6占位。按架构契约。"""
-import json, io
-S=r'C:\Users\EDY\AppData\Local\Temp\claude\D--nexgaios-amazon\ac0b4daa-c9bf-4bf5-bce0-fed60a21c3ff\scratchpad'
-d=json.load(open(S+r'\q1_v6_data.json',encoding='utf-8'))
-months=d['months']; lxd=d['lx']; sv_stb=d['sv_stb']; od_stb=d['od_stb']
+import json, io, os
+HERE=os.path.dirname(os.path.abspath(__file__))
+d=json.load(open(os.path.join(HERE,'q1_v6_data.json'),encoding='utf-8'))
+months=d['months']; lxd=d['lx']; sv_stb=d['sv_stb']; od_stb=d['od_stb']; odb=d['od_brand_stb']
 mm=['%02d'%m for m in range(1,13)]
 lx2025=[lxd['2025-'+m] for m in mm]
 lx2026=[lxd.get('2026-'+m) for m in mm[:6]]+[None]*6
 sv2025=[None]+sv_stb[0:11]; sv2026=sv_stb[11:17]+[None]*6
 od2025=[None]+od_stb[0:11]; od2026=od_stb[11:17]+[None]*6
-DATA=json.dumps({'lx2025':lx2025,'lx2026':lx2026,'sv2025':sv2025,'sv2026':sv2026,'od2025':od2025,'od2026':od2026},ensure_ascii=False)
+odb2025=[None]+odb[0:11]; odb2026=odb[11:17]+[None]*6
+DATA=json.dumps({'lx2025':lx2025,'lx2026':lx2026,'sv2025':sv2025,'sv2026':sv2026,'od2025':od2025,'od2026':od2026,'odb2025':odb2025,'odb2026':odb2026},ensure_ascii=False)
 
 HTML=r'''<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ikarao V3 增长仪表盘</title><script src="echarts.min.js"></script>
@@ -41,6 +42,9 @@ section.q.on{display:block}
 .kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow)}
 .kpi .lab{font-size:13px;color:var(--muted)}
 .kpi .val{font-size:25px;font-weight:800;margin-top:5px;line-height:1.1}.val.g{color:var(--good)}.val.b{color:var(--bad)}.val.n{color:var(--ink)}
+.kpi .mag{font-size:22px;font-weight:800;margin-top:6px;line-height:1.15;color:var(--ink);white-space:nowrap}
+.kpi .dl{display:inline-block;font-size:13.5px;font-weight:800;margin-top:7px;padding:2px 9px;border-radius:6px}
+.kpi .dl.g{color:var(--good);background:#e7f6f0}.kpi .dl.b{color:var(--bad);background:#fbeceb}.kpi .dl.n{color:#40506a;background:var(--line2)}
 .kpi .sub{font-size:12.5px;color:var(--muted);margin-top:4px}
 .slab{font-size:16px;font-weight:800;margin:var(--s3) 0 var(--s2);padding-left:11px;border-left:4px solid var(--brand)}
 .charts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--s2)}
@@ -77,34 +81,34 @@ section.q.on{display:block}
 <section class="q on" id="q1">
 <div class="qhead"><span class="qn">Q1</span><h2>市场在增长吗？我们呢？</h2><span class="badge">口径：可比老词（同一批词）· 今年 2–6 月同比</span></div>
 
-<div class="concl">搜索侧市场<b>没在扩张</b>——可比口径（只比同一批词）下需求持平、成交仍在收缩；但<span class="g">我们逆势增长 24.6%</span>，从对手手里抢下更多份额。
-<span class="lead">核心判断：不是市场变大带动我们，而是我们在不增长的盘子里靠份额与旺季做出真实增量。诚实边界：三份报告只有"搜索侧"、领星只有我们自己，全品类真实总量拿不到，对市场只能保守假设"不增长"。</span></div>
+<div class="concl">搜索侧市场<b>没在扩张</b>，我们却<span class="g">逆势增长 24.6%</span>——增量来自抢份额，不是市场变大带动我们。
+<span class="lead"><b>支撑证据：</b>① 市场可比篮子（同一批词）搜索 −0.9%、成交 −7.6%，盘子没变大<span class="src sqp">SQP</span>；② 我们真实销量 13,758→17,146 台、+24.6%<span class="src lx">领星</span>；③ 搜索侧份额 3.03→3.75%（+0.71 个百分点）<span class="src sqp">SQP</span>；④ 全榜搜索 +13.4% 看着涨，其实是不转化的新词撑的（+133% 搜索 / 0.9% 转化）——多为泛流量，也夹真实新需求/产品缺口（如儿童款），逐词甄别见 Q5。<br><b>诚实边界：</b>三份报告只有"搜索侧"、领星只有我们自己，全品类真实总量拿不到，对市场只能保守假设"不增长"。</span></div>
 
 <div class="kpirow">
-<div class="kpi"><div class="lab">市场搜索需求（可比）<span class="src sqp">SQP</span></div><div class="val n">−0.9%</div><div class="sub">同比 · 持平略降</div></div>
-<div class="kpi"><div class="lab">市场成交（可比）<span class="src sqp">SQP</span></div><div class="val b">−7.6%</div><div class="sub">同比 · 收缩</div></div>
-<div class="kpi"><div class="lab">我们真实销量<span class="src lx">领星</span></div><div class="val g">+24.6%</div><div class="sub">13,758 → 17,146 台</div></div>
-<div class="kpi"><div class="lab">我们搜索侧份额<span class="src sqp">SQP</span></div><div class="val n">3.07→3.77%</div><div class="sub">+0.70 个百分点</div></div>
+<div class="kpi"><div class="lab">市场搜索需求（可比）<span class="src sqp">SQP</span></div><div class="mag">287.2万 → 284.5万</div><div class="dl n">−0.9% 同比</div><div class="sub">次 · Feb–Jun · 持平略降</div></div>
+<div class="kpi"><div class="lab">市场成交（可比）<span class="src sqp">SQP</span></div><div class="mag">73,556 → 67,973</div><div class="dl b">▼ 7.6% 同比</div><div class="sub">单 · Feb–Jun · 收缩</div></div>
+<div class="kpi"><div class="lab">我们真实销量<span class="src lx">领星</span></div><div class="mag">13,758 → 17,146</div><div class="dl g">▲ 24.6% 同比</div><div class="sub">台 · Feb–Jun · 逆势增长</div></div>
+<div class="kpi"><div class="lab">我们搜索侧份额<span class="src sqp">SQP</span></div><div class="mag">3.03% → 3.75%</div><div class="dl g">▲ 0.71 个百分点</div><div class="sub">品牌成交 2,231 → 2,546 单</div></div>
 </div>
 
 <div class="slab">图表 · 逐月走势（同比看两线差、环比看走势；默认停上半年，可拖看旺季）</div>
 <div class="charts">
 <div class="chart-card"><h3>我们真实销量<span class="src lx">领星</span></h3><div class="cap">台 · 2025 vs 2026（今年止 6 月）</div><div class="ech" id="c-lx"></div></div>
 <div class="chart-card"><h3>市场搜索需求（可比老词）<span class="src sqp">SQP</span></h3><div class="cap">搜索次数 · 2025 vs 2026</div><div class="ech" id="c-sv"></div></div>
-<div class="chart-card"><h3>市场成交（可比老词）<span class="src sqp">SQP</span></h3><div class="cap">搜索侧成交 · 2025 vs 2026</div><div class="ech" id="c-od"></div></div>
+<div class="chart-card"><h3>市场 vs 品牌 · 成交（可比篮子）<span class="src sqp">SQP</span></h3><div class="cap">搜索侧成交 · 市场(左轴) / 品牌(右轴) · 2025 虚线 / 2026 实线</div><div class="ech" id="c-od"></div></div>
 </div>
 <table class="ntab">
 <tr><th>新增需求拆解（可比口径会漏掉的换血/长尾词）<span class="src sqp">SQP</span></th><th>搜索量 同比</th><th>成交 同比</th><th>转化率（2026 当期）</th></tr>
 <tr><td>老词（可比 · 去年今年都在榜，171 个）</td><td>−0.9%</td><td class="rd">−7.6%</td><td>2.4%</td></tr>
 <tr class="new"><td>非稳定篮子词（换血 / 长尾）</td><td>+133%</td><td>+0.8%</td><td><span class="hl">0.9%</span></td></tr>
 <tr class="tot"><td>全部词（全榜合计）</td><td>+13.4%</td><td class="rd">−6.8%</td><td>2.1%</td></tr>
-<tr><td class="cap" colspan="4">换血/长尾词是"高搜索、低转化"的泛流量（多 45.8 万次搜索、成交只多 56 单）。无论看老词还是全榜，市场真实成交都在缩；"搜索 +13.4%"全由这批不转化的词撑起。</td></tr>
+<tr><td class="cap" colspan="4">这批词多是"高搜索、低转化"的泛流量（多 45.8 万次搜索、成交只多 56 单）——"搜索 +13.4%"全由它们撑起、成交却没跟上（老词、全榜都在缩）。但其中夹着真实新需求与产品缺口（如儿童款）信号；哪些值得抢、哪些是噪声，逐词甄别见 Q5。</td></tr>
 </table>
 
 <div class="slab">解读要点</div>
 <div class="acts">
 <div class="act"><div class="ah"><span class="chip d">数据支撑</span><span class="at">搜索侧市场未扩张</span></div><div class="ab">可比老词成交 −7.6%、全榜 −6.8%、换血词转化率仅 0.9%<span class="src sqp">SQP</span>。搜索侧的量没有真实变大，全品类真实总量三源都拿不到——<b>不宜把"市场自然增长"作为下半年资源规划前提。</b></div></div>
-<div class="act"><div class="ah"><span class="chip e">专家建议</span><span class="at">不追高搜索低转化的新词</span></div><div class="ab">+133% 的新增搜索是泛流量、几乎不成交，追它=为不转化的曝光付费。例外只有明确产品缺口（如儿童款），属新产品线立项、非现有词加投。</div></div>
+<div class="act"><div class="ah"><span class="chip e">专家建议</span><span class="at">新词是需求雷达，别盲追也别忽视</span></div><div class="ab">+133% 的新增搜索多是不转化的泛流量，盲目加投=为不转化曝光付费；但里面夹着真实新需求与产品缺口（如儿童款）。别一刀切追、也别当噪声丢——哪些词值得抢、哪些是产品线机会，Q5 逐词甄别。</div></div>
 <div class="act"><div class="ah"><span class="chip e">专家建议</span><span class="at">增量靠份额与旺季</span></div><div class="ab">市场不增长，增量来自份额（自然优化）+ 旺季（去年 Q4 卖 35,298 台<span class="src lx">领星</span>、淡季 6–7 倍）。库存预算旺季前置；抢词/漏斗/护栏在 Q2–Q6，目标量在 Q6 定，此处不拍板。</div></div>
 </div>
 
@@ -112,7 +116,7 @@ section.q.on{display:block}
 <h4>① 两个来源、两把尺（禁止对账）</h4><ul>
 <li><span class="k">SQP</span>：市场搜索/成交，仅统计"经搜索结果页"的动作，系统小于真实总量。</li>
 <li><span class="k">领星</span>：我们全渠道真实成交（毛口径、未扣退货）。</li>
-<li>二者不可相加/相除对账：市场搜索侧 −7.6% 与我们真实 +24.6% 是两把尺；我方 SQP 归因成交也只 +13.6%，同样≠领星、非互证。</li></ul>
+<li>二者不可相加/相除对账：市场搜索侧 −7.6% 与我们真实 +24.6% 是两把尺；我方 SQP 归因成交也只 +14.1%，同样≠领星、非互证。</li></ul>
 <h4>② 老词/换血长尾/全榜（2–6 月同比）</h4><ul>
 <li>老词=去年今年 2–6 月均在榜的 171 词，覆盖同期搜索侧成交 90.3%：搜索 −0.9%、成交 −7.6%。</li>
 <li>换血/长尾=全榜减老词残差（两年都有值）：搜索 +133%、成交 +0.8%、转化率 0.9%。</li></ul>
@@ -122,7 +126,7 @@ section.q.on{display:block}
 <h4>④ 讲不了 / 不回答</h4><ul>
 <li>缺去年 1 月市场数据（SQP 自 2025-02）；无全行业真实销量，"市场"结论均限"搜索侧"。</li>
 <li>Q1 只答"市场与我们、今年比去年"；下半年投放/备货量在 Q6 统一定。</li>
-<li>份额升幅约 ¾ 我们绝对量真涨、¼ 市场成交池缩的分母效应（成色见 Q2）。</li></ul>
+<li>份额升幅约六成来自我们绝对量真涨、约四成是市场成交池缩的分母效应（成色见 Q2）。</li></ul>
 </div></details>
 </section>
 
@@ -148,9 +152,23 @@ function line2(id,y25,y26,color,unit){
   series:[{name:'去年 2025',type:'line',data:y25,connectNulls:false,symbol:'circle',symbolSize:4,lineStyle:{type:'dashed',width:1.8,color:'#b3bcc9'},itemStyle:{color:'#b3bcc9'}},
    {name:'今年 2026',type:'line',data:y26,connectNulls:false,symbol:'circle',symbolSize:5,lineStyle:{width:2.6,color:color},itemStyle:{color:color}}]});
 }
+function line2d(id,m25,m26,b25,b26,unit){
+ const c=echarts.init(document.getElementById(id));charts.push(c);
+ c.setOption({textStyle:{fontSize:12},grid:{left:46,right:46,top:48,bottom:44},
+  legend:{data:['市场·去年','市场·今年','品牌·去年','品牌·今年'],top:2,itemWidth:18,itemHeight:8,itemGap:8,textStyle:{fontSize:11}},
+  tooltip:{trigger:'axis',valueFormatter:v=>v==null?'—':fmt(v)+unit},
+  xAxis:{type:'category',data:MON,boundaryGap:false,axisLabel:{fontSize:11,color:css('--muted')}},
+  yAxis:[{type:'value',name:'市场',nameTextStyle:{fontSize:10,color:css('--mkt')},axisLabel:{fontSize:11,color:css('--muted'),formatter:kfmt},splitLine:{lineStyle:{color:css('--line2')}}},
+   {type:'value',name:'品牌',nameTextStyle:{fontSize:10,color:css('--us')},position:'right',axisLabel:{fontSize:11,color:css('--us'),formatter:kfmt},splitLine:{show:false}}],
+  dataZoom:[{type:'inside',startValue:0,endValue:5},{type:'slider',startValue:0,endValue:5,bottom:8,height:16,textStyle:{fontSize:10,color:css('--muted')},fillerColor:'rgba(47,109,246,0.08)',handleStyle:{color:'#fff',borderColor:css('--brand')}}],
+  series:[{name:'市场·去年',type:'line',yAxisIndex:0,data:m25,connectNulls:false,symbol:'circle',symbolSize:4,lineStyle:{type:'dashed',width:1.8,color:'#b3bcc9'},itemStyle:{color:'#b3bcc9'}},
+   {name:'市场·今年',type:'line',yAxisIndex:0,data:m26,connectNulls:false,symbol:'circle',symbolSize:5,lineStyle:{width:2.6,color:css('--mkt')},itemStyle:{color:css('--mkt')}},
+   {name:'品牌·去年',type:'line',yAxisIndex:1,data:b25,connectNulls:false,symbol:'circle',symbolSize:4,lineStyle:{type:'dashed',width:1.8,color:'#9ed6c3'},itemStyle:{color:'#9ed6c3'}},
+   {name:'品牌·今年',type:'line',yAxisIndex:1,data:b26,connectNulls:false,symbol:'circle',symbolSize:5,lineStyle:{width:2.6,color:css('--us')},itemStyle:{color:css('--us')}}]});
+}
 line2('c-lx',D.lx2025,D.lx2026,css('--us'),' 台');
 line2('c-sv',D.sv2025,D.sv2026,css('--mkt'),' 次');
-line2('c-od',D.od2025,D.od2026,css('--mkt'),' 单');
+line2d('c-od',D.od2025,D.od2026,D.odb2025,D.odb2026,' 单');
 // tab 切换
 document.getElementById('nav').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
  document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));
